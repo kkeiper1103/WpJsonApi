@@ -29,7 +29,7 @@ class CommentTransformer extends BaseTransformer
             "id" => (int) $comment->comment_ID,
             "date" => Carbon::parse($comment->comment_date)->toIso8601String(),
             "content" => $comment->comment_content,
-            "karma" => $comment->comment_karma,
+            "karma" => (int) $comment->comment_karma,
             "approved" => (boolean) $comment->comment_approved,
             "agent" => $comment->comment_agent,
             "type" => $comment->comment_type,

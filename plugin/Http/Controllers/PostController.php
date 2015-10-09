@@ -38,7 +38,7 @@ class PostController
      * @param Request $request
      * @return Response
      */
-    public function getIndex(Request $request) {
+    public function all(Request $request) {
         $posts = new Collection( $this->getPosts(), new PostTransformer);
 
         return new JsonResponse\Ok( $this->fractal->createData($posts)->toArray() );
