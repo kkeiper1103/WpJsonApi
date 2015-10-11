@@ -39,7 +39,15 @@ class PostController
      * @return Response
      */
     public function all(Request $request) {
-        $posts = new Collection( $this->getPosts(), new PostTransformer);
+
+        $post_type = ($_GET['type']) ?: "post";
+
+
+        $query = new \WP_Query([
+            "post_type" => $post_type
+        ]);
+
+        $posts = new Collection( $query->get_posts(), new PostTransformer, "posts" );
 
         return new JsonResponse\Ok( $this->fractal->createData($posts)->toArray() );
     }
@@ -50,7 +58,15 @@ class PostController
      * @return JsonResponse\Ok
      */
     public function find( Request $request, array $params ) {
-        $post = new Item( $this->getPost( $params["id"] ), new PostTransformer );
+        $post = $this->getPost( $params["id"] );
+
+        // if the post is empty, return a 404
+        if(empty($post)) {
+            return new JsonResponse\NoContent();
+        }
+
+        //
+        $post = new Item( $this->getPost( $params["id"] ), new PostTransformer, "posts" );
 
         return new JsonResponse\Ok( $this->fractal->createData($post)->toArray() );
     }

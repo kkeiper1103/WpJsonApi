@@ -31,6 +31,8 @@ class FractalProvider extends ServiceProvider
         $manager = new Manager();
         $manager->setSerializer(new JsonApiSerializer);
 
+
+
         if( isset($_GET['include']) ) {
             $manager->parseIncludes( $_GET['include'] );
         }

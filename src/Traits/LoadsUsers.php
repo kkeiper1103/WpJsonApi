@@ -11,6 +11,17 @@ namespace WpJsonApi\Traits;
 
 trait LoadsUsers
 {
+    /**
+     *
+     */
+    public function getUsers() {
+        return get_users();
+    }
+
+    /**
+     * @param $id
+     * @return false|\WP_User
+     */
     public function getUser( $id ) {
         return get_user_by("id", $id);
     }

@@ -31,7 +31,7 @@ class UserTransformer extends BaseTransformer
             "username" => $user->data->user_nicename,
             "login" => $user->data->user_login,
             "display_name" => $user->data->display_name,
-            "email" => $user->data->user_email,
+            // "email" => $user->data->user_email,
             "url" => $user->data->user_url,
             "registered" => Carbon::parse($user->data->user_registered)->toIso8601String(),
             "status" => $user->data->user_status,

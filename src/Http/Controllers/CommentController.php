@@ -39,7 +39,7 @@ class CommentController
      * @return Response
      */
     public function all(Request $request, array $params) {
-        $posts = new Collection( $this->getCommentsByPost( $params['id'] ), new CommentTransformer);
+        $posts = new Collection( $this->getCommentsByPost( $params['id'] ), new CommentTransformer, "comments");
 
         return new JsonResponse\Ok( $this->fractal->createData($posts)->toArray() );
     }
@@ -50,7 +50,7 @@ class CommentController
      * @return JsonResponse\Ok
      */
     public function find( Request $request, array $params ) {
-        $post = new Item( $this->getComment( $params["comment_id"] ), new CommentTransformer );
+        $post = new Item( $this->getComment( $params["comment_id"] ), new CommentTransformer, "comments" );
 
         return new JsonResponse\Ok( $this->fractal->createData($post)->toArray() );
     }
