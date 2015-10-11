@@ -41,7 +41,12 @@ class RouterProvider extends ServiceProvider
 
         $router->setStrategy( $strategy );
 
-        require_once dirname(__DIR__) . "/Http/routes.php";
+        $routes = require_once dirname(__DIR__) . "/Http/routes.php";
+        foreach( $routes as $uri => $settings ) {
+            $this->parseRoute( $uri, $settings );
+        }
+
+
 
         $router = apply_filters("wp-json.routes", $router);
 
@@ -52,5 +57,19 @@ class RouterProvider extends ServiceProvider
         // share the route collection
         $this->getContainer()
             ->add( RouteCollection::class, $router );
+    }
+
+    /**
+     * @param $uri
+     * @param $settings
+     * @return mixed
+     */
+    private function parseRoute($uri, $settings)
+    {
+        if( !is_array($settings) ) {
+            return $this->parseRoute($uri, ["uses" => $settings]);
+        }
+
+
     }
 }
