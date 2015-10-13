@@ -9,6 +9,7 @@
 namespace WpJsonApi;
 
 
+use Closure;
 use FastRoute\Dispatcher;
 use League\Container\Container;
 use League\Route\RouteCollection;
@@ -58,45 +59,44 @@ class Plugin extends Container
      */
     public function dispatch() {
         try {
-            $request = Request::createFromGlobals();
+            $request = $this[ Request::class ];
+            $dispatcher = $this[ Dispatcher::class ];
 
 
-            $suppliedKey = $request->headers->get("X-JSONAPI-AUTH", false);
+            $response = $dispatcher->dispatch( $request->getMethod(), $request->getPathInfo() );
 
-            if( $suppliedKey && $request->headers->get("X-JSONAPI-AUTH") === $this["settings"]["api_key"] ) {
+            /**
+             * Conundrum: I need to know that the route was found (don't want any non registered route throwing a 404)
+             * so I need $response to know that. But by the time $response is created, I've already queried the
+             * database.
+             *
+             * I want to verify that the route exists, but prevent any database calls from happening if the
+             * auth code isn't valid. Processing should bail after dispatch, but before content is loaded. @see below
+             */
 
-                /**
-                 * @var $dispatcher Dispatcher
-                 */
-                $dispatcher = $this->get( Dispatcher::class );
+            // allow themes / plugins to modify the response
+            do_action("wp-json.dispatch", $dispatcher, $request, $response);
 
-                $response = $dispatcher->dispatch( $request->getMethod(), $request->getPathInfo() );
+            // we only want to send the response if a route matched.
+            if( $response->getStatusCode() !== Response::HTTP_NOT_FOUND) {
 
-                /**
-                 *
-                 */
-                do_action("wp-json.dispatch", $dispatcher, $request, $response);
+                if(
+                    // key doesn't exist...
+                    ($key = $request->headers->get("X-WPJSONAPI-AUTH", false)) === false ||
 
-                // we only want to send the response if a route matched.
-                switch($response->getStatusCode()) {
+                    // key isn't the same as what is configured...
+                    $key !== $this["settings"]["api_key"]
+                ) {
+                    /**
+                     *
+                     */
+                    $content = json_encode([
+                        "error" => "Authorization Failed. Did you set the 'X-WPJSONAPI-AUTH' header correctly?"
+                    ]);
 
-                    case Response::HTTP_NO_CONTENT:
-                    case Response::HTTP_OK:
-                        $response->send();
-
-                        exit;
-                        break;
-
+                    $response = new Response($content, Response::HTTP_UNAUTHORIZED);
+                    $response->headers->set("Content-Type", "application/json");
                 }
-            }
-
-            else {
-                $content = json_encode([
-                    "error" => "Authorization Failed. Did you set the 'X-JSONAPI-AUTH' header correctly?"
-                ]);
-
-                $response = new Response($content, Response::HTTP_UNAUTHORIZED);
-                $response->headers->set("Content-Type", "application/json");
 
                 $response->send(); exit;
             }
@@ -115,15 +115,9 @@ class Plugin extends Container
             $this->addServiceProvider( RouterProvider::class );
         });
 
-
-        /**
-         * This causes the plugin's routes to kick in only if WordPress experiences a 404
-         */
+        // dispatch the router when WP is fully loaded
         add_action("wp", function() {
-
-            if( is_404() )
-                $this->dispatch();
-
+            $this->dispatch();
         });
 
         // code to run when admin is loaded
@@ -137,5 +131,13 @@ class Plugin extends Container
             new SettingsPage($this);
 
         });
+    }
+
+    private function runMiddleware(Request $request)
+    {
+        // modify / check middleware as needed
+
+
+        return $request;
     }
 }

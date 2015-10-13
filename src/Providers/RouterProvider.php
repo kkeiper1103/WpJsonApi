@@ -14,13 +14,15 @@ use League\Container\ServiceProvider;
 use League\Route\RouteCollection;
 use League\Route\Strategy\RestfulStrategy;
 use League\Route\Strategy\StrategyInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 class RouterProvider extends ServiceProvider
 {
     protected $provides = [
         RouteCollection::class,
         Dispatcher::class,
-        StrategyInterface::class
+        StrategyInterface::class,
+        Request::class
     ];
 
     /**
@@ -33,43 +35,28 @@ class RouterProvider extends ServiceProvider
     public function register()
     {
         $router = new RouteCollection( $this->getContainer() );
-
         $strategy = new RestfulStrategy;
 
         $this->getContainer()
             ->add( StrategyInterface::class, $strategy );
-
         $router->setStrategy( $strategy );
 
-        $routes = require_once dirname(__DIR__) . "/Http/routes.php";
-        foreach( $routes as $uri => $settings ) {
-            $this->parseRoute( $uri, $settings );
-        }
 
-
-
+        require_once dirname(__DIR__) . "/Http/routes.php";
         $router = apply_filters("wp-json.routes", $router);
+
 
         // share the dispatcher throughout the container
         $this->getContainer()
             ->add( Dispatcher::class, $router->getDispatcher() );
 
+
+
         // share the route collection
         $this->getContainer()
             ->add( RouteCollection::class, $router );
-    }
 
-    /**
-     * @param $uri
-     * @param $settings
-     * @return mixed
-     */
-    private function parseRoute($uri, $settings)
-    {
-        if( !is_array($settings) ) {
-            return $this->parseRoute($uri, ["uses" => $settings]);
-        }
-
-
+        $this->getContainer()
+            ->add( Request::class, Request::createFromGlobals() );
     }
 }
