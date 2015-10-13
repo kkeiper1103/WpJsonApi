@@ -23,3 +23,12 @@ $router->get("/api/comments/{comment_id}", 'WpJsonApi\Http\Controllers\CommentCo
 $router->get("/api/users", 'WpJsonApi\Http\Controllers\UserController::all');
 $router->get("/api/users/{id}", 'WpJsonApi\Http\Controllers\UserController::find');
 $router->get("/api/posts/{id}/author", 'WpJsonApi\Http\Controllers\UserController::findByPost');
+
+// @todo categories
+
+
+// @todo taxonomies
+
+
+// @todo navs
+

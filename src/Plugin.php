@@ -62,6 +62,8 @@ class Plugin extends Container
             $request = $this[ Request::class ];
             $dispatcher = $this[ Dispatcher::class ];
 
+            // Would love something like:
+            // $dispatcher->before( new AuthMiddleware );
 
             $response = $dispatcher->dispatch( $request->getMethod(), $request->getPathInfo() );
 
