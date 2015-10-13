@@ -2,21 +2,23 @@
 /**
  * Created by PhpStorm.
  * User: kkeiper1103
- * Date: 10/8/2015
- * Time: 2:55 PM
+ * Date: 10/13/2015
+ * Time: 1:23 PM
  */
 
 namespace WpJsonApi\Providers;
 
 
-use League\Container\ServiceProvider;
+use League\Container\ServiceProvider\AbstractServiceProvider;
 use League\Fractal\Manager;
 use League\Fractal\Serializer\JsonApiSerializer;
 
-class FractalProvider extends ServiceProvider
+class FractalProvider extends AbstractServiceProvider
 {
+
     protected $provides = [
-        Manager::class
+        Manager::class,
+
     ];
 
     /**
@@ -29,14 +31,13 @@ class FractalProvider extends ServiceProvider
     public function register()
     {
         $manager = new Manager();
-        $manager->setSerializer(new JsonApiSerializer);
+        $manager->setSerializer(new JsonApiSerializer( get_site_url() ));
 
-
-
-        if( isset($_GET['include']) ) {
-            $manager->parseIncludes( $_GET['include'] );
+        if( isset($_GET['includes']) ) {
+            $manager->parseIncludes($_GET['includes']);
         }
 
-        $this->getContainer()->add(Manager::class, $manager);
+        $this->getContainer()
+            ->share(Manager::class, $manager);
     }
 }
