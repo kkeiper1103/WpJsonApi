@@ -11,16 +11,20 @@ namespace WpJsonApi\Providers;
 
 use League\Container\ServiceProvider\AbstractServiceProvider;
 use Phroute\Phroute\Dispatcher;
+use Phroute\Phroute\HandlerResolverInterface;
 use Phroute\Phroute\RouteCollector;
 use Symfony\Component\HttpFoundation\Request;
 use WpJsonApi\Filters\VerifyAuthFilter;
+use WpJsonApi\Resolvers\PluginResolver;
+use WpJsonApi\ResourcefulRouteCollector;
 
 class RoutingProvider extends AbstractServiceProvider
 {
     protected $provides = [
         RouteCollector::class,
         Dispatcher::class,
-        Request::class
+        Request::class,
+        HandlerResolverInterface::class
     ];
 
     /**
@@ -40,8 +44,10 @@ class RoutingProvider extends AbstractServiceProvider
             ->share(Request::class, $request);
 
         //
-        $router = new RouteCollector();
-        $router->filter("verifyAuth", new VerifyAuthFilter($request));
+        $router = new ResourcefulRouteCollector();
+
+        if( strpos("local", $request->getHost()) !== false )
+            $router->filter("verifyAuth", new VerifyAuthFilter($request));
 
         //
         $router->group(["prefix" => "api", "before" => "verifyAuth"], function(RouteCollector $router) {
@@ -60,10 +66,18 @@ class RoutingProvider extends AbstractServiceProvider
         $this->getContainer()
             ->share(RouteCollector::class, $router);
 
+
+        /**
+         * Resolver; ties the controllers to di
+         */
+        $resolver = new PluginResolver( $this->getContainer() );
+        $this->getContainer()
+            ->share(HandlerResolverInterface::class, $resolver);
+
         /**
          * add the dispatcher
          */
-        $dispatcher = new Dispatcher($router->getData());
+        $dispatcher = new Dispatcher($router->getData(), $resolver);
         $this->getContainer()
             ->share(Dispatcher::class, $dispatcher);
     }

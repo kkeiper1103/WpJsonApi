@@ -10,6 +10,7 @@ namespace WpJsonApi;
 
 
 use League\Container\Container;
+use League\Container\ReflectionContainer;
 use League\Fractal\Manager;
 use League\Fractal\Resource\ResourceAbstract;
 use Phroute\Phroute\Dispatcher;
@@ -21,9 +22,17 @@ use WpJsonApi\Providers\FractalProvider;
 use WpJsonApi\Providers\RoutingProvider;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use WpJsonApi\Providers\WhoopsProvider;
 
 class Plugin extends Container
 {
+    public function __construct() {
+        parent::__construct();
+
+        // sets up auto-dependency resolution within container
+        $this->delegate( new ReflectionContainer );
+    }
+
     /**
      *
      */
@@ -41,9 +50,14 @@ class Plugin extends Container
      */
     protected function registerServiceProviders()
     {
+        // if the host header contains "local" within it, assume dev environment
+        // I know this can be spoofed, but I'm planning to remove this when it goes live;
+        // this is just a precaution in case I forget.
+        if( strpos($_SERVER['HTTP_HOST'], "local") !== 0 )
+            $this->addServiceProvider(WhoopsProvider::class);
+
         $this->addServiceProvider(RoutingProvider::class);
         $this->addServiceProvider(FractalProvider::class);
-
 
         return $this;
     }
@@ -73,7 +87,7 @@ class Plugin extends Container
         $dispatcher = $this->get(Dispatcher::class);
 
         // what is the content for the response?
-        $content = $dispatcher->dispatch($request->getMethod(), $request->getRequestUri());
+        $content = $dispatcher->dispatch($request->getMethod(), $request->getPathInfo());
 
         // if the returned content is a string, wrap it in an array and jsonify that
         if( is_string($content) ) {
