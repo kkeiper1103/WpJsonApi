@@ -44,7 +44,10 @@ class PostsController
     public function index(  ) {
         $posts = $this->posts->get( );
 
-        return new Collection($posts, new PostTransformer, "posts");
+        $collection = new Collection($posts, new PostTransformer, "posts");
+        $collection->setMetaValue("count", count($posts));
+        $collection->setMetaValue("page", intval($this->request->get("page")));
+        return $collection;
     }
 
     /**

@@ -19,18 +19,26 @@ use Phroute\Phroute\Exception\HttpRouteNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 use WpJsonApi\Exceptions\AuthorizationNotValidException;
 use WpJsonApi\Providers\FractalProvider;
+use WpJsonApi\Providers\PlatesProvider;
 use WpJsonApi\Providers\RoutingProvider;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use WpJsonApi\Providers\SettingsProvider;
 use WpJsonApi\Providers\WhoopsProvider;
 
 class Plugin extends Container
 {
+    /**
+     *
+     */
     public function __construct() {
         parent::__construct();
 
         // sets up auto-dependency resolution within container
         $this->delegate( new ReflectionContainer );
+
+        // set option name
+        $this->share("option_name", "wp-json-api");
     }
 
     /**
@@ -58,6 +66,8 @@ class Plugin extends Container
 
         $this->addServiceProvider(RoutingProvider::class);
         $this->addServiceProvider(FractalProvider::class);
+        $this->addServiceProvider(PlatesProvider::class);
+        $this->addServiceProvider(SettingsProvider::class);
 
         return $this;
     }
@@ -67,7 +77,7 @@ class Plugin extends Container
      */
     protected function registerActionHooks()
     {
-        add_action("admin_menu", new Actions\MenuAction);
+        add_action("admin_menu", $this->get(Actions\MenuAction::class));
         add_action("init", [$this, 'dispatch']);
     }
 

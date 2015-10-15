@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use WpJsonApi\Filters\VerifyAuthFilter;
 use WpJsonApi\Resolvers\PluginResolver;
 use WpJsonApi\ResourcefulRouteCollector;
+use WpJsonApi\Settings;
 
 class RoutingProvider extends AbstractServiceProvider
 {
@@ -46,8 +47,10 @@ class RoutingProvider extends AbstractServiceProvider
         //
         $router = new ResourcefulRouteCollector();
 
-        if( strpos("local", $request->getHost()) !== false )
-            $router->filter("verifyAuth", new VerifyAuthFilter($request));
+        $settings = $this->getContainer()->get(Settings::class);
+
+        if( $settings->get("required", false) != false )
+            $router->filter("verifyAuth", $this->getContainer()->get(VerifyAuthFilter::class));
 
         //
         $router->group(["prefix" => "api", "before" => "verifyAuth"], function(RouteCollector $router) {

@@ -11,6 +11,7 @@ namespace WpJsonApi\Filters;
 
 use Symfony\Component\HttpFoundation\Request;
 use WpJsonApi\Exceptions\AuthorizationNotValidException;
+use WpJsonApi\Settings;
 
 class VerifyAuthFilter implements FilterInterface
 {
@@ -18,12 +19,18 @@ class VerifyAuthFilter implements FilterInterface
      * @var Request
      */
     protected $request;
+    /**
+     * @var Settings
+     */
+    private $settings;
 
     /**
      * @param Request $request
+     * @param Settings $settings
      */
-    public function __construct(Request $request) {
+    public function __construct(Request $request, Settings $settings) {
         $this->request = $request;
+        $this->settings = $settings;
     }
 
     /**
@@ -36,7 +43,7 @@ class VerifyAuthFilter implements FilterInterface
 
         if(
             ($key = $request->headers->get("X-WPJSONAPI-AUTH", false)) === false ||
-            $key != "asdfjkl;"
+            $key != $this->settings->get("key")
         ) {
             throw new AuthorizationNotValidException;
         }
