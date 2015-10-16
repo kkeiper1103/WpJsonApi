@@ -37,7 +37,7 @@ class PostTransformer extends TransformerAbstract
                 "slug" => $post->post_name,
                 "guid" => $post->guid
             ]
-        ]);
+        ], $post);
 
         return $schema;
     }

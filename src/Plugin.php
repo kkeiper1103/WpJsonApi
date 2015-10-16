@@ -110,9 +110,14 @@ class Plugin extends Container
                 ->createData($content)->toArray();
         }
 
+        // if the response is a Response Object, send that instead
+        else if( $content instanceof Response ) {
+            return $content->send();
+        }
+
         // send the response
         $response = new JsonResponse($content);
-        $response->send(); exit;
+        return $response->send();
     }
 
     /**
@@ -120,13 +125,18 @@ class Plugin extends Container
      */
     public function dispatch() {
         try {
-            $this->run();
+            $this->run(); exit;
         }
 
-        // not sure about this. would much rather handle similar to $anv
         catch (HttpMethodNotAllowedException $mna)
         {
-            header($mna->getMessage());
+            $content = [
+                "error" => "Requested HTTP Method not Allowed!"
+            ];
+
+            $response = new JsonResponse($content, Response::HTTP_METHOD_NOT_ALLOWED);
+            $response->headers->set("Allow", ltrim($mna->getMessage(), "Allow: "));
+            $response->send(); exit;
         }
 
         // if someone throws an invalid auth exception, just output an unauthorized jsonresponse

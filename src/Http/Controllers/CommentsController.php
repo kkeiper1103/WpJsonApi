@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: kkeiper1103
- * Date: 10/13/2015
- * Time: 1:29 PM
+ * Date: 10/16/2015
+ * Time: 9:41 AM
  */
 
 namespace WpJsonApi\Http\Controllers;
@@ -14,60 +14,69 @@ use League\Fractal\Resource\Item;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use WpJsonApi\Exceptions\MethodNotImplementedException;
-use WpJsonApi\Transformers\MenuTransformer;
-use WpJsonApi\Transformers\MenuWithItemsTransformers;
+use WpJsonApi\Transformers\CommentTransformer;
 
-class MenusController implements RestfulInterface
+class CommentsController
 {
+
     /**
+     * @param $post_id
      * @return Collection
      */
-    public function index()
+    public function index( $post_id )
     {
-        $menus = wp_get_nav_menus();
+        $comments = get_comments([
+            "post_id" => (int) $post_id
+        ]);
 
-        return new Collection($menus, new MenuTransformer, "menus");
+        return new Collection($comments, new CommentTransformer, "comments");
     }
 
     /**
+     * @param $post_id
      * @throws MethodNotImplementedException
      */
-    public function store()
+    public function store( $post_id )
     {
         throw new MethodNotImplementedException(__FUNCTION__);
     }
 
     /**
+     * @param $post_id
      * @param $id
      * @return Item|JsonResponse
      */
-    public function show($id)
+    public function show( $post_id, $id )
     {
-        $menu = wp_get_nav_menu_object( (int) $id );
+        $comment = get_comments([
+            "post_id" => (int) $post_id,
+            "comment__in" => [$id]
+        ]);
 
-
-        if( $menu === false ) {
+        // if there are no comments matching the given ids, return no content response
+        if( empty($comment) )
             return new JsonResponse([], Response::HTTP_NOT_FOUND);
-        }
 
 
-        return new Item($menu, new MenuWithItemsTransformers, "menus");
+        return new Item( current($comment), new CommentTransformer, "comments");
     }
 
     /**
+     * @param $post_id
      * @param $id
      * @throws MethodNotImplementedException
      */
-    public function update($id)
+    public function update( $post_id, $id )
     {
         throw new MethodNotImplementedException(__FUNCTION__);
     }
 
     /**
+     * @param $post_id
      * @param $id
      * @throws MethodNotImplementedException
      */
-    public function destroy($id)
+    public function destroy( $post_id, $id )
     {
         throw new MethodNotImplementedException(__FUNCTION__);
     }

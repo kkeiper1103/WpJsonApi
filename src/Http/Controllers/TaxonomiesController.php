@@ -9,27 +9,32 @@
 namespace WpJsonApi\Http\Controllers;
 
 
-class TaxonomiesController
+class TaxonomiesController implements RestfulInterface
 {
 
-    public function getIndex( $id = null ) {
-        /**
-         *
-         */
-        if( !is_null($id) ) {
-            $query = new \WP_Query([
-                "posts_per_page" => -1,
-                "p" => $id
-            ]);
-        }
-        else {
-            $query = new \WP_Query([
-                "posts_per_page" => 10
-            ]);
-        }
 
-        //
-        return $query->get_posts();
+    public function index()
+    {
+        // TODO: Implement index() method.
     }
 
+    public function store()
+    {
+        // TODO: Implement store() method.
+    }
+
+    public function show($id)
+    {
+        // TODO: Implement show() method.
+    }
+
+    public function update($id)
+    {
+        // TODO: Implement update() method.
+    }
+
+    public function destroy($id)
+    {
+        // TODO: Implement destroy() method.
+    }
 }
