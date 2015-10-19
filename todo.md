@@ -4,3 +4,4 @@
 * Add Nav API parts
 * Add Categories API parts
 * Add Taxonomies API parts
+* find sane way to authenticate for pushing content changes through API (Auth Token?)

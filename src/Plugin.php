@@ -117,6 +117,7 @@ class Plugin extends Container
 
         // send the response
         $response = new JsonResponse($content);
+        $response->headers->set("Content-Type", "application/vnd.api+json");
         return $response->send();
     }
 

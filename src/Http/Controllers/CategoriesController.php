@@ -17,13 +17,26 @@ use WpJsonApi\Transformers\CategoryTransformer;
 class CategoriesController implements RestfulInterface
 {
     /**
+     * @var CategoryTransformer
+     */
+    private $transformer;
+
+    /**
+     * @param CategoryTransformer $transformer
+     */
+    public function __construct( CategoryTransformer $transformer ) {
+
+        $this->transformer = $transformer;
+    }
+
+    /**
      * @return Collection
      */
     public function index()
     {
         $categories = get_categories();
 
-        return new Collection($categories, new CategoryTransformer, "categories");
+        return new Collection($categories, $this->transformer, "categories");
     }
 
     /**
@@ -42,7 +55,7 @@ class CategoriesController implements RestfulInterface
     {
         $category = get_category( (int) $id );
 
-        return new Item($category, new CategoryTransformer, "categories");
+        return new Item($category, $this->transformer, "categories");
     }
 
     /**

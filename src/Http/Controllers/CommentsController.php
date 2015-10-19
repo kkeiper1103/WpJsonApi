@@ -18,6 +18,18 @@ use WpJsonApi\Transformers\CommentTransformer;
 
 class CommentsController
 {
+    /**
+     * @var CommentTransformer
+     */
+    private $transformer;
+
+    /**
+     * @param CommentTransformer $transformer
+     */
+    public function __construct( CommentTransformer $transformer ) {
+
+        $this->transformer = $transformer;
+    }
 
     /**
      * @param $post_id
@@ -29,7 +41,7 @@ class CommentsController
             "post_id" => (int) $post_id
         ]);
 
-        return new Collection($comments, new CommentTransformer, "comments");
+        return new Collection($comments, $this->transformer, "comments");
     }
 
     /**
@@ -58,7 +70,7 @@ class CommentsController
             return new JsonResponse([], Response::HTTP_NOT_FOUND);
 
 
-        return new Item( current($comment), new CommentTransformer, "comments");
+        return new Item( current($comment), $this->transformer, "comments");
     }
 
     /**

@@ -21,14 +21,22 @@ class MenuWithItemsTransformers extends TransformerAbstract
     public function transform( $menu ) {
 
         $schema = apply_filters("wp-json.transform.menu", [
+
+            "type" => "menus",
             "id" => (int) $menu->term_id,
-            "name" => $menu->name,
-            "slug" => $menu->slug,
-            "taxonomy" => $menu->taxonomy,
-            "parent" => (int) $menu->parent,
-            "count" => (int) $menu->count,
-            "description" => $menu->description,
-            "items" => $this->organizeItems( wp_get_nav_menu_items((int) $menu->term_id) ),
+
+            "attributes" => [
+                "name" => $menu->name,
+                "slug" => $menu->slug,
+                "taxonomy" => $menu->taxonomy,
+                "parent" => (int) $menu->parent,
+                "count" => (int) $menu->count,
+                "description" => $menu->description,
+                "items" => $this->organizeItems(
+                    wp_get_nav_menu_items((int) $menu->term_id)
+                )
+            ]
+
         ], $menu);
 
         return $schema;

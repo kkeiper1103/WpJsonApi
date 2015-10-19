@@ -11,68 +11,59 @@ namespace WpJsonApi\Transformers;
 
 use Carbon\Carbon;
 use League\Fractal\TransformerAbstract;
+use Phroute\Phroute\RouteCollector;
 
 class CommentTransformer extends TransformerAbstract
 {
+    /**
+     * @var RouteCollector
+     */
+    private $router;
 
-    protected $availableIncludes = [
-        "post",
-        "author",
-        "parent"
-    ];
+    /**
+     * @param RouteCollector $router
+     */
+    public function __construct(RouteCollector $router) {
+
+        $this->router = $router;
+    }
 
     /**
      * @param $comment
      * @return mixed|void
      */
     public function transform( $comment ) {
+
         $schema = apply_filters("wp-json.transform.comments", [
+
+            "type" => "comments",
             "id" => (int) $comment->comment_ID,
-            "date" => Carbon::parse($comment->comment_date)->toIso8601String(),
-            "content" => $comment->comment_content,
-            "karma" => (int) $comment->comment_karma,
-            "approved" => (boolean) $comment->comment_approved,
-            "agent" => $comment->comment_agent,
-            "type" => $comment->comment_type,
-            "ip_address" => $comment->comment_author_IP
+
+            "attributes" => [
+                "date" => Carbon::parse($comment->comment_date)->toIso8601String(),
+                "content" => $comment->comment_content,
+                "karma" => (int) $comment->comment_karma,
+                "approved" => (boolean) $comment->comment_approved,
+                "agent" => $comment->comment_agent,
+                "type" => $comment->comment_type,
+                "ip_address" => $comment->comment_author_IP
+            ],
+
+            "links" => [
+                "self" => get_home_url(null, $this->router->route("posts.comments.show",
+                    [$comment->comment_post_ID, $comment->comment_ID]))
+            ],
+
+            "relationships" => [
+                "posts" => [
+                    "links" => [
+                        "self" => get_home_url(null, $this->router->route("posts.show", [$comment->comment_post_ID]))
+                    ]
+                ]
+            ]
+
         ]);
 
         return $schema;
-    }
-
-    /**
-     * @param $comment
-     * @return \League\Fractal\Resource\Item
-     */
-    public function includePost( $comment ) {
-        $post = get_post( (int) $comment->comment_post_ID );
-
-        return $this->item($post, new PostTransformer);
-    }
-
-    /**
-     * @param $comment
-     * @return \League\Fractal\Resource\Item
-     */
-    public function includeAuthor( $comment ) {
-        $user = get_user_by("id", (int) $comment->comment_author );
-
-        return $this->item($user, new UserTransformer);
-    }
-
-    /**
-     * @param $comment
-     * @return \League\Fractal\Resource\Item
-     */
-    public function includeParent( $comment ) {
-        $parent = $this->getComment( (int) $comment->comment_parent );
-
-        return $this->item($parent, new CommentTransformer);
-    }
-
-    public function includeChildren( $comment ) {
-        $comments = $this->getChildComments( $comment );
-
-        return $this->collection($comments, new CommentTransformer);
     }
 }

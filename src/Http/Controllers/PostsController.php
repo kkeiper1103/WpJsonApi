@@ -20,33 +20,47 @@ use WpJsonApi\Transformers\PostTransformer;
 class PostsController
 {
     /**
-     * @var
-     */
-    protected $posts;
-
-    /**
      * @var Request
      */
     private $request;
+    /**
+     * @var PostTransformer
+     */
+    private $transformer;
 
     /**
      * @param Request $request
-     * @param PostManager $posts
+     * @param PostTransformer $transformer
      */
-    public function __construct( Request $request, PostManager $posts ) {
-        $this->posts = $posts;
+    public function __construct( Request $request, PostTransformer $transformer ) {
         $this->request = $request;
+        $this->transformer = $transformer;
     }
 
     /**
      * @return ResourceAbstract
      */
     public function index(  ) {
-        $posts = $this->posts->get( );
 
-        $collection = new Collection($posts, new PostTransformer, "posts");
+        $defaults = [
+            "posts_per_page" => 10,
+            "post_type" => "post",
+            "paged" => 1,
+        ];
+
+        // is this a security risk? I don't know for sure
+        $args = array_merge($defaults, $this->request->query->all());
+
+        /**
+         * Load posts based on query
+         */
+        $posts = get_posts( $args );
+
+        $collection = new Collection($posts, $this->transformer, "posts");
+
         $collection->setMetaValue("count", count($posts));
-        $collection->setMetaValue("page", intval($this->request->get("page")));
+        $collection->setMetaValue("page", intval($this->request->query->get("paged")));
+
         return $collection;
     }
 
@@ -66,9 +80,10 @@ class PostsController
      * @return ResourceAbstract
      */
     public function show( $id ) {
-        $post = $this->posts->find($id);
 
-        return new Item($post, new PostTransformer, "posts");
+        $post = get_post( (int) $id );
+
+        return new Item($post, $this->transformer, "posts");
     }
 
     /**
