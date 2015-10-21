@@ -42,7 +42,7 @@ class CommentTransformer extends TransformerAbstract
             "attributes" => [
                 "date" => Carbon::parse($comment->comment_date)->toIso8601String(),
                 "content" => $comment->comment_content,
-                "karma" => (int) $comment->comment_karma,
+                "karma" => (float) $comment->comment_karma,
                 "approved" => (boolean) $comment->comment_approved,
                 "agent" => $comment->comment_agent,
                 "type" => $comment->comment_type,

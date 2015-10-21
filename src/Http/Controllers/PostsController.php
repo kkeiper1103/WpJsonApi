@@ -12,6 +12,7 @@ namespace WpJsonApi\Http\Controllers;
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\Item;
 use League\Fractal\Resource\ResourceAbstract;
+use Phroute\Phroute\RouteCollector;
 use Symfony\Component\HttpFoundation\Request;
 use WpJsonApi\Exceptions\MethodNotImplementedException;
 use WpJsonApi\Managers\PostManager;
@@ -27,14 +28,20 @@ class PostsController
      * @var PostTransformer
      */
     private $transformer;
+    /**
+     * @var RouteCollector
+     */
+    private $router;
 
     /**
      * @param Request $request
      * @param PostTransformer $transformer
+     * @param RouteCollector $router
      */
-    public function __construct( Request $request, PostTransformer $transformer ) {
+    public function __construct( Request $request, PostTransformer $transformer, RouteCollector $router ) {
         $this->request = $request;
         $this->transformer = $transformer;
+        $this->router = $router;
     }
 
     /**

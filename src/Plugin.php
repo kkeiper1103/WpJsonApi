@@ -61,7 +61,8 @@ class Plugin extends Container
         // if the host header contains "local" within it, assume dev environment
         // I know this can be spoofed, but I'm planning to remove this when it goes live;
         // this is just a precaution in case I forget.
-        if( strpos($_SERVER['HTTP_HOST'], "local") !== 0 )
+
+        if( strpos($_SERVER['HTTP_HOST'], "local") !== false )
             $this->addServiceProvider(WhoopsProvider::class);
 
         $this->addServiceProvider(RoutingProvider::class);
@@ -78,6 +79,8 @@ class Plugin extends Container
     protected function registerActionHooks()
     {
         add_action("admin_menu", $this->get(Actions\MenuAction::class));
+
+
         add_action("init", [$this, 'dispatch']);
     }
 

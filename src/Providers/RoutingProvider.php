@@ -53,7 +53,10 @@ class RoutingProvider extends AbstractServiceProvider
             $router->filter("verifyAuth", $this->getContainer()->get(VerifyAuthFilter::class));
 
         //
-        $router->group(["prefix" => "api", "before" => "verifyAuth"], function(RouteCollector $router) {
+        $router->group([
+            "prefix" => $settings->get("prefix", "api"),
+            "before" => "verifyAuth"
+        ], function(RouteCollector $router) {
 
             /**
              * @TODO change v1 slug maybe? make configurable?

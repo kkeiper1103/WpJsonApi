@@ -14,7 +14,6 @@ $plugin = new \WpJsonApi\Plugin();
 $plugin->register();
 
 
-
 add_filter('plugin_action_links_' . plugin_basename( __FILE__ ), function(array $links) {
     $href = esc_url( get_admin_url(null, 'options-general.php?page=wp-json-api') );
 
